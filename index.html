@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Layered Cake & Candle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <!-- Confetti library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style> 
+        body {
+            background-color: rgb(101, 175, 255);
+            background-image: url("https://img.freepik.com/premium-vector/cute-heart-seamless-pattern-blue-background-valentines-day_266639-1813.jpg");
+            color: rgb(0, 0, 0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            height: 100vh; 
+            margin: 0;
+            background-size: cover;
+        }
+
+        .container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .cursive {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        .centered-text {
+            text-align: center;
+        }
+
+        .left {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .right-column {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 300px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .white-block {
+            background: white;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.2);
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .cake-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 10px;
+        }
+
+        .cake {
+            position: absolute;
+            top: -50px;
+            left: -150%;
+            width: 150%;
+            height: 150%;
+            background: url('https://static.vecteezy.com/system/resources/thumbnails/009/399/507/small/birthday-cake-clipart-design-illustration-free-png.png') no-repeat center;
+            background-size: contain;
+        }
+
+        .candle-img {
+            position: absolute;
+            top: -40px;
+            left: -75%;
+            transform: translateX(-50%);
+            max-height: 50%;
+        }
+
+        .flame-img {
+            position: absolute;
+            top: -190px;
+            left: -75%;
+            transform: translateX(-50%);
+            max-height: 200px;
+            mix-blend-mode: screen;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left widget -->
+        <div class="left">
+            <div class="cake-wrapper">
+                <span class="cake"></span>
+                <img class="candle-img" src="https://drive.google.com/thumbnail?id=17EBeHr4F4wveLfC1O4p6aicYNPLtG7cQ&sz=w200" alt="Candle">
+                <img id="flame" class="flame-img" src="https://i.gifer.com/9PrD.gif" alt="Flame">
+            </div>
+        </div>
+        
+        <!-- Right widget -->
+        <div class="right-column">
+            <div class="white-block">
+                <h2 class="cursive centered-text">——— DAD ———</h2>
+                <p class="centered-text">To the most wonderful father I have known for all my life. I wish in full health that the golden heart of yours has a very</p>
+                <h2 class="cursive centered-text">Happy Birthday!</h2>
+                <p class="centered-text">Blow out the candle through the mic 🎤</p> 
+            </div>
+        </div>
+    </div>
+
+    <script>
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const mic = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+
+        const dataArray = new Uint8Array(analyser.fftSize);
+        mic.connect(analyser);
+
+        let blownOut = false;
+        const flame = document.getElementById('flame');
+
+        // Confetti burst
+        function launchConfetti() {
+          const duration = 3 * 1000;
+          const end = Date.now() + duration;
+
+          (function frame() {
+            confetti({
+              particleCount: 7,
+              startVelocity: 30,
+              spread: 360,
+              ticks: 60,
+              origin: { x: Math.random(), y: Math.random() - 0.2 }
+            });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          })();
+        }
+
+        // Detect blow
+        function detectBlow() {
+          analyser.getByteTimeDomainData(dataArray);
+          const volume = dataArray.reduce((sum, val) => sum + Math.abs(val - 128), 0) / dataArray.length;
+
+          if (volume > 15 && !blownOut) {
+            flame.style.opacity = 0;
+            blownOut = true;
+            launchConfetti(); // 🎉 only trigger once
+          }
+
+          requestAnimationFrame(detectBlow);
+        }
+
+        detectBlow();
+      })
+      .catch(error => {
+        alert('You did not allow mic :( You cannot blow out candle without mic');
+        console.error(error);
+      });
+    </script>
+</body>
+</html>
